@@ -1,4 +1,9 @@
+# Node modules
 node_modules/
-
-.env*
 package-lock.json
+
+# Build output
+dist/
+
+# Environment variables
+.env
