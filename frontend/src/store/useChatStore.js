@@ -14,7 +14,9 @@ export const useChatStore = create((set, get) => ({
     set({ isUsersLoading: true });
     try {
       const res = await axiosInstance.get("/messages/users");
-      set({ users: res.data });
+      const loggedInUserId = useAuthStore.getState().authUser._id;
+      const users = res.data.filter((user) => user._id !== loggedInUserId);
+      set({ users });
     } catch (error) {
       toast.error(error.response.data.message);
     } finally {
@@ -46,26 +48,27 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  //   subscribeToMessages: () => {
-  //     const { selectedUser } = get();
-  //     if (!selectedUser) return;
+  subscribeToMessages: () => {
+    const { selectedUser } = get();
+    if (!selectedUser) return;
 
-  //     const socket = useAuthStore.getState().socket;
+    const socket = useAuthStore.getState().socket;
 
-  //     socket.on("newMessage", (newMessage) => {
-  //       const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
-  //       if (!isMessageSentFromSelectedUser) return;
+    socket.on("newMessage", (newMessage) => {
+      const isMessageSentFromSelectedUser =
+        newMessage.senderId === selectedUser._id;
+      if (!isMessageSentFromSelectedUser) return;
 
-  //       set({
-  //         messages: [...get().messages, newMessage],
-  //       });
-  //     });
-  //   },
+      set({
+        messages: [...get().messages, newMessage],
+      });
+    });
+  },
 
-  //   unsubscribeFromMessages: () => {
-  //     const socket = useAuthStore.getState().socket;
-  //     socket.off("newMessage");
-  //   },
+  unsubscribeFromMessages: () => {
+    const socket = useAuthStore.getState().socket;
+    socket.off("newMessage");
+  },
 
   setSelectedUser: (selectedUser) => set({ selectedUser }),
 }));

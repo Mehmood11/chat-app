@@ -1,14 +1,11 @@
 import cloudinary from "../lib/cloudinary.js";
+import { getReceiverSocketId, io } from "../lib/socket.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
 
 export const getUsersForSidebarHandler = async (req, res) => {
   try {
-    const loggedInUserId = req.user._id;
-    const filteredUsers = await User.find({
-      _id: { $eq: loggedInUserId },
-    }).select("-password");
-
+    const filteredUsers = await User.find().select("-password");
     res.status(200).json(filteredUsers);
   } catch (error) {
     console.log("Error in getUsersForSidebarHandler: ", error.message);
@@ -57,7 +54,11 @@ export const sendMessagesHandler = async (req, res) => {
 
     await newMessage.save();
 
-    //todo: realtime functionality goes here => socket.io
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
+
     res.status(201).json(newMessage);
   } catch (error) {
     console.log("Error in sendMessagesHandler controller: ", error.message);
