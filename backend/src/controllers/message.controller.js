@@ -6,7 +6,7 @@ export const getUsersForSidebarHandler = async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
     const filteredUsers = await User.find({
-      _id: { $en: loggedInUserId },
+      _id: { $eq: loggedInUserId },
     }).select("-password");
 
     res.status(200).json(filteredUsers);
@@ -38,8 +38,8 @@ export const getMessagesHandler = async (req, res) => {
 export const sendMessagesHandler = async (req, res) => {
   try {
     const { text, image } = req.body;
-    const { id: userToChatId } = req.params;
-    const myId = req.user._id;
+    const { id: receiverId } = req.params;
+    const senderId = req.user._id;
 
     let imageUrl;
     if (image) {
